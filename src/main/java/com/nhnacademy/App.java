@@ -1,18 +1,14 @@
 package com.nhnacademy;
 
-import com.nhnacademy.http.server.HttpServer;
+import com.nhnacademy.http.SimpleHttpServer;
+import lombok.extern.slf4j.Slf4j;
+import java.io.*;
 
-/**
- * Hello world!
- *
- */
+@Slf4j
 public class App 
 {
-    public static void main( String[] args )
-    {
-        HttpServer httpServer = new HttpServer();
-        Thread thread = new Thread(httpServer);
-        thread.start();
-
+    public static void main( String[] args ) throws IOException {
+        SimpleHttpServer simpleHttpServer = new SimpleHttpServer(8080);
+        simpleHttpServer.start();
     }
 }
