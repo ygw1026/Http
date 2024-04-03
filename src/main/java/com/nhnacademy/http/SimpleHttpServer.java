@@ -23,51 +23,52 @@ public class SimpleHttpServer {
         this.port = port;
     }
 
-
     public void start() throws IOException {
 
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder requestBuilder = new StringBuilder();
 
         try(ServerSocket serverSocket = new ServerSocket(8080);){
 
             for(;;){
+                //todo client 연결됨
                 Socket client = serverSocket.accept();
-                try {
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                //todo 입축겨을 위해서  Reader, Writer를 선언
+                try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(client.getInputStream()));
                     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
+                    ) {
 
-                    while (true) {
-                        String line = bufferedReader.readLine();
-                        stringBuilder.append(line);
-                        log.debug("line:{}", line);
-                        if (Objects.isNull(line) || line.length() == 0) {
-                            break;
+                        while (true) {
+                            String line = bufferedReader.readLine();
+                            //todo StringBuilder에 append
+                            requestBuilder.append(line);
+                            log.debug("line:{}", line);
+                            if (Objects.isNull(line) || line.length() == 0) {
+                                //todo 종료 조건 null or size==0
+                                break;
+                            }
                         }
-                    }
 
-                    StringBuilder responseBody = new StringBuilder();
-                    responseBody.append("<html>\n");
-                    responseBody.append("<body>\n");
-                    responseBody.append("<h1>hello java</h1>");
-                    responseBody.append("</body>\n");
-                    responseBody.append("</html>");
+                        //todo RequestBuilder에 append된 데이터를 parcing 하여 HttpRequest가 동작할 수 있도록 구현합니다.
 
-                    //StringBuilder response = new StringBuilder();
+                        StringBuilder responseBody = new StringBuilder();
+                        responseBody.append("<html>");
+                        responseBody.append("<body>");
+                        responseBody.append("<h1>hello java</h1>");
+                        responseBody.append("</body>");
+                        responseBody.append("</html>");
 
-                    String response = "HTTP/1.0 200 OK\n"
-                            + "Server: HTTP server/0.1\n"
-                            + "Content-type: text/html; charset=UTF-8\n"
-                            + "Content-Length:28 \n\n"
-                            + "<html><body>OK</body></html>\n";
+                        StringBuilder responseHeader = new StringBuilder();
 
+                        responseHeader.append(String.format("HTTP/1.0 200 OK%s",System.lineSeparator()));
+                        responseHeader.append(String.format("Server: HTTP server/0.1%s",System.lineSeparator()));
+                        responseHeader.append(String.format("Content-type: text/html; charset=%s%s","UTF-8",System.lineSeparator()));
+                        responseHeader.append(String.format("Connection: Closed%s",System.lineSeparator()));
+                        responseHeader.append(String.format("Content-Length:%d %s%s",responseBody.length(),System.lineSeparator(),System.lineSeparator()));
 
-                    //bufferedWriter.write("");
-                    //bufferedWriter.write("Hello world\n");
-
-                    log.debug("response:{}",response);
-                    bufferedWriter.flush();
-
-                    client.close();
+                        bufferedWriter.write(responseHeader.toString());
+                        bufferedWriter.write(responseBody.toString());
+                        bufferedWriter.flush();
+                        client.close();
                 }catch (IOException e){
                     if (Objects.nonNull(client)){
                         client.close();;
