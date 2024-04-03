@@ -47,7 +47,6 @@ public class SimpleHttpServer {
                                 break;
                             }
                         }
-
                         //todo RequestBuilder에 append된 데이터를 parcing 하여 HttpRequest가 동작할 수 있도록 구현합니다.
 
                         StringBuilder responseBody = new StringBuilder();
