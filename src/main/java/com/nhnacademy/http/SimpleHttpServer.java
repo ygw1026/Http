@@ -36,17 +36,18 @@ public class SimpleHttpServer {
                 try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(client.getInputStream()));
                     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
                     ) {
-
+                        log.debug("------HTTP-REQUEST_start()");
                         while (true) {
                             String line = bufferedReader.readLine();
                             //todo StringBuilder에 append
                             requestBuilder.append(line);
-                            log.debug("line:{}", line);
+                            log.debug("{}", line);
                             if (Objects.isNull(line) || line.length() == 0) {
                                 //todo 종료 조건 null or size==0
                                 break;
                             }
                         }
+                        log.debug("------HTTP-REQUEST_end()");
                         //todo RequestBuilder에 append된 데이터를 parcing 하여 HttpRequest가 동작할 수 있도록 구현합니다.
 
                         StringBuilder responseBody = new StringBuilder();
