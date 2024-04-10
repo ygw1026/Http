@@ -14,9 +14,13 @@ public class SimpleHttpServer {
     private static final int DEFAULT_PORT=8080;
 
     public SimpleHttpServer(){
+        //TODO#2 기본 port는 8080을 사용합니다.
         this(DEFAULT_PORT);
     }
+
     public SimpleHttpServer(int port) {
+        //TODO#1 port range <=0 IllegalArgumentException 예외가 발생 합니다.
+
         if(port<=0){
             throw new IllegalArgumentException(String.format("port range check:%d",port));
         }
@@ -29,27 +33,36 @@ public class SimpleHttpServer {
 
         try(ServerSocket serverSocket = new ServerSocket(8080);){
 
-            for(;;){
-                //todo client 연결됨
+            while(true){
+                //TODO#3 client가 연결될 때 까지 대기 합니다.
                 Socket client = serverSocket.accept();
-                //todo 입축겨을 위해서  Reader, Writer를 선언
+
+                //TODO#4 입출력을 위해서  Reader, Writer를 선언 합니다.
                 try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(client.getInputStream()));
                     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
                     ) {
                         log.debug("------HTTP-REQUEST_start()");
                         while (true) {
                             String line = bufferedReader.readLine();
-                            //todo StringBuilder에 append
+                            //TODO#5  requestBuilder에 append 합니다.
                             requestBuilder.append(line);
                             log.debug("{}", line);
+
+                            //TODO#6 종료 조건 null or size==0
                             if (Objects.isNull(line) || line.length() == 0) {
-                                //todo 종료 조건 null or size==0
                                 break;
                             }
                         }
                         log.debug("------HTTP-REQUEST_end()");
-                        //todo RequestBuilder에 append된 데이터를 parcing 하여 HttpRequest가 동작할 수 있도록 구현합니다.
 
+                        //TODO#7 clinet에 응답할 html을 작성합니다.
+                        /*
+                            <html>
+                                <body>
+                                    <h1>hello hava</h1>
+                                </body>
+                            </html>
+                        */
                         StringBuilder responseBody = new StringBuilder();
                         responseBody.append("<html>");
                         responseBody.append("<body>");
@@ -59,22 +72,40 @@ public class SimpleHttpServer {
 
                         StringBuilder responseHeader = new StringBuilder();
 
+                        //TODO#8 HTTP/1.0 200 OK
                         responseHeader.append(String.format("HTTP/1.0 200 OK%s",System.lineSeparator()));
+
                         responseHeader.append(String.format("Server: HTTP server/0.1%s",System.lineSeparator()));
+
+                        //TODO#9 Content-type: text/html; charset=UTF-8"
                         responseHeader.append(String.format("Content-type: text/html; charset=%s%s","UTF-8",System.lineSeparator()));
+
                         responseHeader.append(String.format("Connection: Closed%s",System.lineSeparator()));
+
+                        //TODO#10 responseBody의  Content-Length를 설정 합니다.
                         responseHeader.append(String.format("Content-Length:%d %s%s",responseBody.length(),System.lineSeparator(),System.lineSeparator()));
 
+                        //TODO#11 write Response Header
                         bufferedWriter.write(responseHeader.toString());
+
+                        //TODO#12 write Response Body
                         bufferedWriter.write(responseBody.toString());
+
+                        //TODO#13 buffer에 등록된 Response (header, body) flush 합니다.(socket을 통해서 clent에 응답 합니다.)
                         bufferedWriter.flush();
-                        client.close();
+
+                        log.debug("header:{}",responseHeader);
+                        log.debug("body:{}",responseBody);
+
                 }catch (IOException e){
+                    log.error("sock error : {}",e);
+                }finally {
+                    //TODO#14 Client Socket Close
                     if (Objects.nonNull(client)){
                         client.close();;
                     }
                 }
-            }
+            }//end while
 
         }
     }
