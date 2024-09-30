@@ -25,12 +25,13 @@ import java.util.Optional;
 
 @Slf4j
 class SimpleHttpServerTest {
-    static Thread thread;
+
+    static int TEST_PORT=9999;
 
     @BeforeAll
     static void beforeAllSetUp(){
-        thread = new Thread(()->{
-            SimpleHttpServer simpleHttpServer = new SimpleHttpServer(8080);
+        Thread thread = new Thread(()->{
+            SimpleHttpServer simpleHttpServer = new SimpleHttpServer(TEST_PORT);
             try {
                 simpleHttpServer.start();
             } catch (IOException e) {
@@ -47,7 +48,7 @@ class SimpleHttpServerTest {
     void request1() throws URISyntaxException, IOException, InterruptedException {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080"))
+                .uri(new URI(String.format("http://localhost:%d",TEST_PORT)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
@@ -60,7 +61,7 @@ class SimpleHttpServerTest {
     void request2() throws URISyntaxException, IOException, InterruptedException {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080"))
+                .uri(new URI(String.format("http://localhost:%d",TEST_PORT)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
@@ -80,7 +81,7 @@ class SimpleHttpServerTest {
     void request3() throws URISyntaxException, IOException, InterruptedException {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080"))
+                .uri(new URI(String.format("http://localhost:%d",TEST_PORT)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
@@ -97,7 +98,7 @@ class SimpleHttpServerTest {
     void request4() throws URISyntaxException, IOException, InterruptedException {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080"))
+                .uri(new URI(String.format("http://localhost:%d",TEST_PORT)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
