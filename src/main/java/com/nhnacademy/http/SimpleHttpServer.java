@@ -58,6 +58,7 @@ public class SimpleHttpServer {
             ){
                 StringBuilder requestBuilder = new StringBuilder();
                 log.debug("------HTTP-REQUEST_start()");
+
                 while(true) {
                     String line = bf.readLine();
                     requestBuilder.append(line);
@@ -87,7 +88,6 @@ public class SimpleHttpServer {
                 bw.write(responseHeader.toString());
                 bw.write(responseBody.toString());
                 bw.flush();
-                //bw.close();
 
                 log.debug("header:{}", responseHeader);
                 log.debug("body:{}", responseBody);
