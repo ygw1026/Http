@@ -1,71 +1,81 @@
 package com.nhnacademy.http.channel;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.Objects;
+
+import com.nhnacademy.http.request.HttpRequest;
+import com.nhnacademy.http.request.HttpRequestImpl;
+import com.nhnacademy.http.response.HttpResponse;
+import com.nhnacademy.http.response.HttpResponseImpl;
+import com.nhnacademy.http.util.ResponseUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HttpJob implements Executable {
+
     private final Socket client;
-    private static final String CRLF = "\r\n";
+    private final HttpRequest httpRequest;
+    private final HttpResponse httpResponse;
 
     public HttpJob(Socket client){
         if(Objects.isNull(client)){
             throw new IllegalArgumentException("client Socket is null");
         }
         this.client = client;
+        this.httpRequest = new HttpRequestImpl(client);
+        this.httpResponse = new HttpResponseImpl(client);
     }
 
-    public Socket getClient(){
-        return client;
+    public HttpRequest getHttpRequest(){
+        return httpRequest;
     }
 
     @Override
     public void execute(){
-        StringBuilder requestBuilder = new StringBuilder();
-        try(
-            BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
-        ){
-            while(true) {
-                String line = br.readLine();
-                requestBuilder.append(line);
-                log.debug("line:{}", line);
-                if(Objects.isNull(line) || line.length() == 0) {
-                    break;
-                }
+
+        log.debug("method:{}", httpRequest.getMethod());
+        log.debug("uri:{}", httpRequest.getRequestURI());
+        log.debug("clinet-closed:{}", client.isClosed());
+
+        String responseBody = null;
+        String responseHeader = null;
+
+        if(!ResponseUtils.isExist(httpRequest.getRequestURI())){
+            try {
+                responseBody = ResponseUtils.tryGetBodyFromFile(ResponseUtils.DEFAULT_404);
+                responseHeader = ResponseUtils.createResponseHeader(404, "utf-8", responseBody.getBytes("utf-8").length);
+            }catch (IOException e){
+                throw new RuntimeException(e);
             }
-
-            StringBuilder responseBody = new StringBuilder();
-            responseBody.append("<html>");
-                responseBody.append("<body>");
-                    responseBody.append(String.format("<h1>{%s}hello java</h1>", Thread.currentThread().getName()));
-                responseBody.append("</body>");
-            responseBody.append("</html>");
-
-            StringBuilder responseHeader = new StringBuilder();
-
-            responseHeader.append(String.format("HTTP/1.0 200 OK%s", CRLF));
-            responseHeader.append(String.format("Server: HTTP server/0.1%s", CRLF));
-            responseHeader.append(String.format("Content-type: text/html; charset=%s%s", "UTF-8", CRLF));
-            responseHeader.append(String.format("Connection: Closed%s", CRLF));
-            responseHeader.append(String.format("Content-Length:%d %s%s", responseBody.length(), CRLF, CRLF));
-
-            bw.write(responseHeader.toString());
-            bw.write(responseBody.toString());
-            bw.flush();
-            client.close();
-        }catch(IOException e){
-            log.error("server error:{}", e);
-        }finally {
+        }else{
             try{
-                client.close();
+                responseBody = ResponseUtils.tryGetBodyFromFile(httpRequest.getRequestURI());
+            }catch (IOException e){
+                throw new RuntimeException(e);
+            }
+            try {
+                responseHeader = ResponseUtils.createResponseHeader(200, "UTF-8", responseBody.getBytes("utf-8").length);
+            }catch (UnsupportedEncodingException e){
+                throw new RuntimeException(e);
+            }
+        }
+
+        try(BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()))) {
+            bufferedWriter.write(responseHeader);
+            bufferedWriter.write(responseBody);
+            bufferedWriter.flush();
+        }catch (IOException e) {
+            throw new RuntimeException(e);
+        }finally {
+            try {
+                if(Objects.nonNull(client) && client.isConnected()){
+                    client.close();
+                }
             }catch (IOException e){
                 throw new RuntimeException(e);
             }
