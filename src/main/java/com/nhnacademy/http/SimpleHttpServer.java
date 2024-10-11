@@ -15,6 +15,7 @@ package com.nhnacademy.http;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SimpleHttpServer {
      private final int port;
      private static final int DEFAULT_PORT = 8080;
-     private final ServerSocket serverSocket;
+
+     private final AtomicLong atomicCounter;
 
      public SimpleHttpServer() {
         this(DEFAULT_PORT);
@@ -30,28 +32,39 @@ public class SimpleHttpServer {
 
      public SimpleHttpServer(int port) {
         if(port <= 0) {
-            throw new IllegalArgumentException(String.format("port range check:%d", port));
+            throw new IllegalArgumentException(String.format("Invalid Port:%d", port));
         }
 
         this.port = port;
-
-        try {
-            serverSocket = new ServerSocket(this.port);
-        }catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        atomicCounter = new AtomicLong();
      }
 
-     public synchronized void start() throws IOException {
-        try {
-            while(!Thread.currentThread().isInterrupted()) {
-                Socket client = serverSocket.accept();
+     public void start(){
+        try(ServerSocket serverSocket = new ServerSocket(port);){
 
-                Thread thread = new Thread(new HttpRequestHandler(client));
-                thread.start();
+            HttpRequestHandler httpRequestHandlerA = new HttpRequestHandler();
+            HttpRequestHandler httpRequestHandlerB = new HttpRequestHandler();
+
+            Thread threadA = new Thread(httpRequestHandlerA);
+            threadA.setName("threadA");
+            threadA.start();
+            Thread threadB = new Thread(httpRequestHandlerB);
+            threadB.setName("threadB");
+            threadB.start();
+
+            while(true){
+                Socket client = serverSocket.accept();
+                long count = atomicCounter.incrementAndGet();
+                log.debug("count:{}", atomicCounter);
+                
+                if(count%2==0){
+                    httpRequestHandlerA.addRequest(client);
+                }else{
+                    httpRequestHandlerB.addRequest(client);
+                }
             }
-        }catch (Exception e) {
-            log.debug("{}", e.getMessage());
+        }catch (IOException e) {
+            throw new RuntimeException(e);
         }
      }
 }
