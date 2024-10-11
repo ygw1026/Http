@@ -15,7 +15,9 @@ package com.nhnacademy.http;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.atomic.AtomicLong;
+
+import com.nhnacademy.http.channel.HttpJob;
+import com.nhnacademy.http.channel.RequestChannel;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,7 +26,9 @@ public class SimpleHttpServer {
      private final int port;
      private static final int DEFAULT_PORT = 8080;
 
-     private final AtomicLong atomicCounter;
+     private final RequestChannel requestChannel;
+
+     private WorkerThreadPool workerThreadPool;
 
      public SimpleHttpServer() {
         this(DEFAULT_PORT);
@@ -36,35 +40,20 @@ public class SimpleHttpServer {
         }
 
         this.port = port;
-        atomicCounter = new AtomicLong();
+        requestChannel = new RequestChannel();
+        workerThreadPool = new WorkerThreadPool(requestChannel);
      }
 
      public void start(){
-        try(ServerSocket serverSocket = new ServerSocket(port);){
+        workerThreadPool.start();
 
-            HttpRequestHandler httpRequestHandlerA = new HttpRequestHandler();
-            HttpRequestHandler httpRequestHandlerB = new HttpRequestHandler();
-
-            Thread threadA = new Thread(httpRequestHandlerA);
-            threadA.setName("threadA");
-            threadA.start();
-            Thread threadB = new Thread(httpRequestHandlerB);
-            threadB.setName("threadB");
-            threadB.start();
-
-            while(true){
+        try(ServerSocket serverSocket = new ServerSocket(8080);){
+            while(true) {
                 Socket client = serverSocket.accept();
-                long count = atomicCounter.incrementAndGet();
-                log.debug("count:{}", atomicCounter);
-                
-                if(count%2==0){
-                    httpRequestHandlerA.addRequest(client);
-                }else{
-                    httpRequestHandlerB.addRequest(client);
-                }
+                requestChannel.addHttpJob(new HttpJob(client));
             }
         }catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("server error:{}", e);
         }
      }
 }
