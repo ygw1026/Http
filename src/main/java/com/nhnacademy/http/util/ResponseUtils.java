@@ -9,13 +9,15 @@ import java.util.Objects;
 
 public class  ResponseUtils {
     public static final String DEFAULT_404 = "/404.html";
+    public static final String DEFAULT_405 = "/405.html";
     private static final String CRLF="\r\n";
     private ResponseUtils(){}
 
-    enum HttpStatus{
+    public enum HttpStatus{
         OK(200, "OK"),
         NOT_FOUND(404, "Not Found"),
-        UNKNOWN(-1, "Unknown Status");
+        UNKNOWN(-1, "Unknown Status"),
+        METHOD_NOT_ALLOWED(405, "Method Not Allowed");
 
         private final int code;
         private final String description;

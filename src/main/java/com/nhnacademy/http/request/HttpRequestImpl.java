@@ -111,6 +111,9 @@ public class HttpRequestImpl implements HttpRequest {
         String arr[] = s.split(" ");
 
         if(arr.length > 0){
+            headerMap.put(KEY_HTTP_METHOD, s.split(" ")[0]);
+        }
+        if (arr.length > 2) {
             Map<String, String> queryMap = new HashMap<>();
             int questionIndex = arr[1].indexOf("?");
             String httpRequestPath;
