@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.nhnacademy.http.request.HttpRequest;
 import com.nhnacademy.http.response.HttpResponse;
+import com.nhnacademy.http.util.CounterUtils;
 import com.nhnacademy.http.util.ResponseUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,7 @@ public class InfoHttpService implements HttpService{
         String id = httpRequest.getParameter("id");
         String name = httpRequest.getParameter("name");
         name = URLDecoder.decode(name, StandardCharsets.UTF_8);
-        String age = null;
+        String age = httpRequest.getParameter("age");
 
         log.debug("id:{}", id);
         log.debug("name:{}", name);
@@ -37,6 +38,8 @@ public class InfoHttpService implements HttpService{
         responseBody = responseBody.replace("${name}", name);
         responseBody = responseBody.replace("${age}", age);
 
+        responseBody = responseBody.replace("${count}", String.valueOf(CounterUtils.increaseAndGet()));
+
         String responseHeader = ResponseUtils.createResponseHeader(200, "UTF-8", responseBody.getBytes().length);
 
         try(PrintWriter bufferedWriter = httpResponse.getWriter();){
@@ -44,8 +47,8 @@ public class InfoHttpService implements HttpService{
             bufferedWriter.write(responseBody);
             bufferedWriter.write("\n");
             bufferedWriter.flush();
-            log.debug("body:{}", responseBody.toString());
-        }catch (Exception e){
+            log.debug("body:{}", responseBody);
+        }catch (IOException e){
             throw new RuntimeException(e);
         }
     }

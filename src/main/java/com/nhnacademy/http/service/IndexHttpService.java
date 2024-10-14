@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 
 import com.nhnacademy.http.request.HttpRequest;
 import com.nhnacademy.http.response.HttpResponse;
+import com.nhnacademy.http.util.CounterUtils;
 import com.nhnacademy.http.util.ResponseUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ public class IndexHttpService implements HttpService{
 
         try {
             responseBody = ResponseUtils.tryGetBodyFromFile(httpRequest.getRequestURI());
+            responseBody = responseBody.replace("${count}", String.valueOf(CounterUtils.increaseAndGet()));
         } catch(IOException e){
             throw new RuntimeException(e);
         }
@@ -28,8 +30,8 @@ public class IndexHttpService implements HttpService{
             bufferedWriter.write(responseHeader);
             bufferedWriter.write(responseBody);
             bufferedWriter.flush();
-            log.debug("body:{}", responseBody);
-        }catch (Exception e){
+            log.debug("body:{}", responseBody.toString());
+        }catch (IOException e){
             throw new RuntimeException(e);
         }
     }

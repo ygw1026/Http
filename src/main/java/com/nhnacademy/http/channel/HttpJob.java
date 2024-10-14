@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
 
+import com.nhnacademy.http.context.Context;
+import com.nhnacademy.http.context.ContextHolder;
+import com.nhnacademy.http.context.exception.ObjectNotFoundException;
 import com.nhnacademy.http.request.HttpRequest;
 import com.nhnacademy.http.request.HttpRequestImpl;
 import com.nhnacademy.http.response.HttpResponse;
 import com.nhnacademy.http.response.HttpResponseImpl;
 import com.nhnacademy.http.service.HttpService;
-import com.nhnacademy.http.service.IndexHttpService;
-import com.nhnacademy.http.service.InfoHttpService;
-import com.nhnacademy.http.service.MethodNotAllowedService;
-import com.nhnacademy.http.service.NotFoundHttpService;
 import com.nhnacademy.http.util.ResponseUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -45,21 +44,22 @@ public class HttpJob implements Executable {
         log.debug("clinet-closed:{}", client.isClosed());
 
         HttpService httpService = null;
+        Context context = ContextHolder.getApplicationContext();
 
         if(!ResponseUtils.isExist(httpRequest.getRequestURI())){
-            httpService = new NotFoundHttpService();
-        }else if(httpRequest.getRequestURI().equals("/index.html")){
-            httpService = new IndexHttpService();
-        }else if(httpRequest.getRequestURI().equals("/info.html")){
-            httpService = new InfoHttpService();
+            httpService = (HttpService) context.getAttribute(ResponseUtils.DEFAULT_404);
         }else {
-            httpService = new NotFoundHttpService();
+            try {
+                httpService = (HttpService) context.getAttribute(httpRequest.getRequestURI());
+            }catch (ObjectNotFoundException e){
+                httpService = (HttpService) context.getAttribute(ResponseUtils.DEFAULT_404);
+            }
         }
 
         try{
             httpService.service(httpRequest, httpResponse);
         }catch (RuntimeException e) {
-            httpService = new MethodNotAllowedService();
+            httpService = (HttpService) context.getAttribute(ResponseUtils.DEFAULT_405);
             httpService.service(httpRequest, httpResponse);
         }
 

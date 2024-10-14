@@ -18,6 +18,13 @@ import java.net.Socket;
 
 import com.nhnacademy.http.channel.HttpJob;
 import com.nhnacademy.http.channel.RequestChannel;
+import com.nhnacademy.http.context.Context;
+import com.nhnacademy.http.context.ContextHolder;
+import com.nhnacademy.http.service.IndexHttpService;
+import com.nhnacademy.http.service.InfoHttpService;
+import com.nhnacademy.http.service.MethodNotAllowedService;
+import com.nhnacademy.http.service.NotFoundHttpService;
+import com.nhnacademy.http.util.CounterUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,11 +49,19 @@ public class SimpleHttpServer {
         this.port = port;
         requestChannel = new RequestChannel();
         workerThreadPool = new WorkerThreadPool(requestChannel);
+
+        Context context = ContextHolder.getApplicationContext();
+        context.setAttribute("/index.html", new IndexHttpService());
+        context.setAttribute("/info.html", new InfoHttpService());
+        context.setAttribute("/404.html", new NotFoundHttpService());
+        context.setAttribute("/405.html", new MethodNotAllowedService());
+        context.setAttribute(CounterUtils.CONTEXT_COUNTER_NAME, 0l);
      }
 
      public void start(){
         workerThreadPool.start();
 
+        //오류 발생시 "this.port" <=> "8080" 으로 변경 필요
         try(ServerSocket serverSocket = new ServerSocket(this.port);){
             while(true) {
                 Socket client = serverSocket.accept();

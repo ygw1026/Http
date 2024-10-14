@@ -29,7 +29,7 @@ public class NotFoundHttpService implements HttpService{
             bufferedWriter.write(responseBody);
             bufferedWriter.flush();
             log.debug("body:{}", responseBody);
-        }catch(Exception e) {
+        }catch(IOException e) {
             throw new RuntimeException(e);
         }
     }
