@@ -47,7 +47,7 @@ public class SimpleHttpServer {
      public void start(){
         workerThreadPool.start();
 
-        try(ServerSocket serverSocket = new ServerSocket(8080);){
+        try(ServerSocket serverSocket = new ServerSocket(this.port);){
             while(true) {
                 Socket client = serverSocket.accept();
                 requestChannel.addHttpJob(new HttpJob(client));

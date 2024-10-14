@@ -1,9 +1,6 @@
 package com.nhnacademy.http.channel;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.Objects;
 
@@ -11,6 +8,11 @@ import com.nhnacademy.http.request.HttpRequest;
 import com.nhnacademy.http.request.HttpRequestImpl;
 import com.nhnacademy.http.response.HttpResponse;
 import com.nhnacademy.http.response.HttpResponseImpl;
+import com.nhnacademy.http.service.HttpService;
+import com.nhnacademy.http.service.IndexHttpService;
+import com.nhnacademy.http.service.InfoHttpService;
+import com.nhnacademy.http.service.MethodNotAllowedService;
+import com.nhnacademy.http.service.NotFoundHttpService;
 import com.nhnacademy.http.util.ResponseUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,43 +44,31 @@ public class HttpJob implements Executable {
         log.debug("uri:{}", httpRequest.getRequestURI());
         log.debug("clinet-closed:{}", client.isClosed());
 
-        String responseBody = null;
-        String responseHeader = null;
+        HttpService httpService = null;
 
         if(!ResponseUtils.isExist(httpRequest.getRequestURI())){
-            try {
-                responseBody = ResponseUtils.tryGetBodyFromFile(ResponseUtils.DEFAULT_404);
-                responseHeader = ResponseUtils.createResponseHeader(404, "utf-8", responseBody.getBytes("utf-8").length);
-            }catch (IOException e){
-                throw new RuntimeException(e);
-            }
-        }else{
-            try{
-                responseBody = ResponseUtils.tryGetBodyFromFile(httpRequest.getRequestURI());
-            }catch (IOException e){
-                throw new RuntimeException(e);
-            }
-            try {
-                responseHeader = ResponseUtils.createResponseHeader(200, "UTF-8", responseBody.getBytes("utf-8").length);
-            }catch (UnsupportedEncodingException e){
-                throw new RuntimeException(e);
-            }
+            httpService = new NotFoundHttpService();
+        }else if(httpRequest.getRequestURI().equals("/index.html")){
+            httpService = new IndexHttpService();
+        }else if(httpRequest.getRequestURI().equals("/info.html")){
+            httpService = new InfoHttpService();
+        }else {
+            httpService = new NotFoundHttpService();
         }
 
-        try(BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()))) {
-            bufferedWriter.write(responseHeader);
-            bufferedWriter.write(responseBody);
-            bufferedWriter.flush();
+        try{
+            httpService.service(httpRequest, httpResponse);
+        }catch (RuntimeException e) {
+            httpService = new MethodNotAllowedService();
+            httpService.service(httpRequest, httpResponse);
+        }
+
+        try {
+            if(Objects.nonNull(client) && client.isConnected()) {
+                client.close();
+            }
         }catch (IOException e) {
             throw new RuntimeException(e);
-        }finally {
-            try {
-                if(Objects.nonNull(client) && client.isConnected()){
-                    client.close();
-                }
-            }catch (IOException e){
-                throw new RuntimeException(e);
-            }
         }
     }
 }
