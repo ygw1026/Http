@@ -19,7 +19,7 @@ public class  ResponseUtils {
         NOT_FOUND(404, "Not Found"),
         UNKNOWN(-1, "Unknown Status"),
         METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
-        MOVED_PARMANENTLY(301, "Moved Permarnenetly");
+        MOVED_PERMANENTLY(301, "Moved Permanenetly");
 
         private final int code;
         private final String description;
@@ -72,12 +72,20 @@ public class  ResponseUtils {
 
     public static String createResponseHeader(int httpStatusCode, String charset, int contentLength, String location){
         StringBuilder responseHeader = new StringBuilder();
+        if(httpStatusCode == 301){
+            responseHeader.append(String.format("HTTP/1.1 %d %s%s", httpStatusCode, HttpStatus.getStatusFromCode(httpStatusCode).getDescription(), CRLF));
+            responseHeader.append(String.format("Location : %s%s", location, CRLF));
+            responseHeader.append(String.format("Content-type: text/html; charset=%s%s", charset, CRLF));
+            responseHeader.append(String.format("Connection: closed%s", CRLF));
+            responseHeader.append(String.format("Content-Length:%d %s%s", contentLength, System.lineSeparator(), CRLF));
+            return responseHeader.toString();
+        }
         responseHeader.append(String.format("HTTP/1.1 %d %s%s", httpStatusCode, HttpStatus.getStatusFromCode(httpStatusCode).getDescription(), CRLF));
+        responseHeader.append(String.format("Location : %s%s", location, CRLF));
         responseHeader.append(String.format("Server: HTTP server/1.1%s", CRLF));
         responseHeader.append(String.format("Content-type: text/html; charset=%s%s", charset, CRLF));
-        responseHeader.append(String.format("Connection: keep-alive%s", CRLF));
+        responseHeader.append(String.format("Connection: closed%s", CRLF));
         responseHeader.append(String.format("Content-Length:%d %s%s", contentLength, System.lineSeparator(), CRLF));
-        responseHeader.append(String.format("Location : %s%s", location, CRLF));
         return responseHeader.toString();
     }
 }

@@ -63,12 +63,12 @@ public class HttpJob implements Executable {
             httpService.service(httpRequest, httpResponse);
         }
 
-        try{
-            httpService.service(httpRequest, httpResponse);
-        }catch (RuntimeException e){
-            httpService = (HttpService) context.getAttribute(ResponseUtils.DEFAULT_301);
-            httpService.service(httpRequest, httpResponse);
-        }
+        // try{
+        //     httpService.service(httpRequest, httpResponse);
+        // }catch (RuntimeException e){
+        //     httpService = (HttpService) context.getAttribute(ResponseUtils.DEFAULT_301);
+        //     httpService.service(httpRequest, httpResponse);
+        // }
 
         try {
             if(Objects.nonNull(client) && client.isConnected()) {

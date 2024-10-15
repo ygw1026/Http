@@ -22,13 +22,14 @@ public class MovedPermanenetlyService implements HttpService{
             throw new RuntimeException(e);
         }
 
-        String responseHeader = ResponseUtils.createResponseHeader(200, "OK", responseBody.getBytes().length, "");
+        String responseHeader = ResponseUtils.createResponseHeader(301, "UTF-8", responseBody.getBytes().length, "/index.html?userId=marco");
 
         try(PrintWriter bufferedWriter = httpResponse.getWriter();){
             bufferedWriter.write(responseHeader);
             bufferedWriter.write(responseBody);
             bufferedWriter.write("\n");
             bufferedWriter.flush();
+            log.debug("header:{}", responseHeader);
             log.debug("body:{}", responseBody);
         }catch (IOException e){
             throw new RuntimeException(e);

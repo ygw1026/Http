@@ -22,7 +22,7 @@ public class RegisterHttpService implements HttpService {
             throw new RuntimeException(e);
         }
 
-        String responseHeader = ResponseUtils.createResponseHeader(200, "UTF-8", responseBody.length(), "");
+        String responseHeader = ResponseUtils.createResponseHeader(200, "UTF-8", responseBody.length(), "http://localhost:8080/register.html");
 
         try(PrintWriter bufferedWriter = httpResponse.getWriter();){
             bufferedWriter.write(responseHeader);
@@ -48,8 +48,9 @@ public class RegisterHttpService implements HttpService {
 
         try(PrintWriter bufferedWriter = httpResponse.getWriter();){
             bufferedWriter.write(responseHeader);
-            bufferedWriter.write(responseBody);
+            // bufferedWriter.write(responseBody);
             bufferedWriter.flush();
+            log.debug("responseHeader : {}",responseHeader);
             log.debug("body:{}", responseBody);
         }catch (IOException e){
             throw new RuntimeException(e);
