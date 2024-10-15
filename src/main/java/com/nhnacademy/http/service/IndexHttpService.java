@@ -42,4 +42,33 @@ public class IndexHttpService implements HttpService{
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void doPost(HttpRequest httpRequest, HttpResponse httpResponse){
+        String responseBody = null;
+
+        try{
+            responseBody = ResponseUtils.tryGetBodyFromFile(httpRequest.getRequestURI());
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+
+        String userId = httpRequest.getParameter("userId");
+        log.debug("userId:{}", userId);
+
+        responseBody = responseBody.replace("${userId}", userId);
+        responseBody = responseBody.replace("${count}", String.valueOf(CounterUtils.increaseAndGet()));
+
+        String responseHeader = ResponseUtils.createResponseHeader(200, "OK", responseBody.getBytes().length, "");
+
+        try(PrintWriter bufferedWriter = httpResponse.getWriter();){
+            bufferedWriter.write(responseHeader);
+            bufferedWriter.write(responseBody);
+            bufferedWriter.write("\n");
+            bufferedWriter.flush();
+            log.debug("body:{}", responseBody);
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+    }
 }

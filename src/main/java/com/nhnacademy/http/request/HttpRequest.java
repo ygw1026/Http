@@ -16,4 +16,6 @@ public interface HttpRequest {
     Object getAttribute(String name);
 
     String getRequestURI();
+
+    String getLocation(String location);
 }

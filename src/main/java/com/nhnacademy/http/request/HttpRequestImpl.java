@@ -86,6 +86,11 @@ public class HttpRequestImpl implements HttpRequest {
         attributeMap.put(name, o);
     }
 
+    @Override
+    public String getLocation(String location){
+        return location;
+    }
+
     private boolean isFirstLine(String line){
         if(Objects.isNull(line)){
             return false;
