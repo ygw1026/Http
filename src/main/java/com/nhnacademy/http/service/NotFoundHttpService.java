@@ -22,7 +22,7 @@ public class NotFoundHttpService implements HttpService{
             throw new RuntimeException(e);
         }
 
-        String responseHeader = ResponseUtils.createResponseHeader(ResponseUtils.HttpStatus.NOT_FOUND.getCode(), "UTF-8", responseBody.length());
+        String responseHeader = ResponseUtils.createResponseHeader(ResponseUtils.HttpStatus.NOT_FOUND.getCode(), "UTF-8", responseBody.length(), "");
 
         try(PrintWriter bufferedWriter = httpResponse.getWriter();){
             bufferedWriter.write(responseHeader);

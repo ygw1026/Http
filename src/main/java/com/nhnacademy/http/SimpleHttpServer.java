@@ -23,7 +23,9 @@ import com.nhnacademy.http.context.ContextHolder;
 import com.nhnacademy.http.service.IndexHttpService;
 import com.nhnacademy.http.service.InfoHttpService;
 import com.nhnacademy.http.service.MethodNotAllowedService;
+import com.nhnacademy.http.service.MovedPermanenetlyService;
 import com.nhnacademy.http.service.NotFoundHttpService;
+import com.nhnacademy.http.service.RegisterHttpService;
 import com.nhnacademy.http.util.CounterUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -56,13 +58,15 @@ public class SimpleHttpServer {
         context.setAttribute("/404.html", new NotFoundHttpService());
         context.setAttribute("/405.html", new MethodNotAllowedService());
         context.setAttribute(CounterUtils.CONTEXT_COUNTER_NAME, 0l);
+        context.setAttribute("/register.html", new RegisterHttpService());
+        context.setAttribute("/301.html", new MovedPermanenetlyService());
      }
 
      public void start(){
         workerThreadPool.start();
 
         //오류 발생시 "this.port" <=> "8080" 으로 변경 필요
-        try(ServerSocket serverSocket = new ServerSocket(this.port);){
+        try(ServerSocket serverSocket = new ServerSocket(8080);){
             while(true) {
                 Socket client = serverSocket.accept();
                 requestChannel.addHttpJob(new HttpJob(client));

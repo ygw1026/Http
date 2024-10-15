@@ -10,6 +10,7 @@ import java.util.Objects;
 public class  ResponseUtils {
     public static final String DEFAULT_404 = "/404.html";
     public static final String DEFAULT_405 = "/405.html";
+    public static final String DEFAULT_301 = "/301.html";
     private static final String CRLF="\r\n";
     private ResponseUtils(){}
 
@@ -17,7 +18,8 @@ public class  ResponseUtils {
         OK(200, "OK"),
         NOT_FOUND(404, "Not Found"),
         UNKNOWN(-1, "Unknown Status"),
-        METHOD_NOT_ALLOWED(405, "Method Not Allowed");
+        METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
+        MOVED_PARMANENTLY(301, "Moved Permarnenetly");
 
         private final int code;
         private final String description;
@@ -68,13 +70,14 @@ public class  ResponseUtils {
             return responseBody.toString();
     }
 
-    public static String createResponseHeader(int httpStatusCode, String charset, int contentLength){
+    public static String createResponseHeader(int httpStatusCode, String charset, int contentLength, String location){
         StringBuilder responseHeader = new StringBuilder();
-        responseHeader.append(String.format("HTTP/1.0 %d %s%s", httpStatusCode, HttpStatus.getStatusFromCode(httpStatusCode).getDescription(), CRLF));
-        responseHeader.append(String.format("Server: HTTP server/0.1%s", CRLF));
+        responseHeader.append(String.format("HTTP/1.1 %d %s%s", httpStatusCode, HttpStatus.getStatusFromCode(httpStatusCode).getDescription(), CRLF));
+        responseHeader.append(String.format("Server: HTTP server/1.1%s", CRLF));
         responseHeader.append(String.format("Content-type: text/html; charset=%s%s", charset, CRLF));
-        responseHeader.append(String.format("Connection: Closed%s", CRLF));
+        responseHeader.append(String.format("Connection: keep-alive%s", CRLF));
         responseHeader.append(String.format("Content-Length:%d %s%s", contentLength, System.lineSeparator(), CRLF));
+        responseHeader.append(String.format("Location : %s%s", location, CRLF));
         return responseHeader.toString();
     }
 }

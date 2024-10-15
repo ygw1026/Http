@@ -20,7 +20,7 @@ public class MethodNotAllowedService implements HttpService{
             throw new RuntimeException(e);
         }
 
-        String responseHeader = ResponseUtils.createResponseHeader(ResponseUtils.HttpStatus.METHOD_NOT_ALLOWED.getCode(), "UTF-8", responseBody.length());
+        String responseHeader = ResponseUtils.createResponseHeader(ResponseUtils.HttpStatus.METHOD_NOT_ALLOWED.getCode(), "UTF-8", responseBody.length(), "");
 
         try(PrintWriter bufferedWriter = httpResponse.getWriter();){
             bufferedWriter.write(responseHeader);

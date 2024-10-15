@@ -17,20 +17,27 @@ public class IndexHttpService implements HttpService{
     public void doGet(HttpRequest httpRequest, HttpResponse httpResponse){
         String responseBody = null;
 
-        try {
+        try{
             responseBody = ResponseUtils.tryGetBodyFromFile(httpRequest.getRequestURI());
-            responseBody = responseBody.replace("${count}", String.valueOf(CounterUtils.increaseAndGet()));
-        } catch(IOException e){
+        }catch (IOException e){
             throw new RuntimeException(e);
         }
 
-        String responseHeader = ResponseUtils.createResponseHeader(200, "UTF-8", responseBody.length());
+        String userId = httpRequest.getParameter("userId");
+
+        log.debug("userId:{}", userId);
+
+        responseBody = responseBody.replace("${userId}", userId);
+        responseBody = responseBody.replace("${count}", String.valueOf(CounterUtils.increaseAndGet()));
+        
+        String responseHeader = ResponseUtils.createResponseHeader(200, "OK", responseBody.getBytes().length, "");
 
         try(PrintWriter bufferedWriter = httpResponse.getWriter();){
             bufferedWriter.write(responseHeader);
             bufferedWriter.write(responseBody);
+            bufferedWriter.write("\n");
             bufferedWriter.flush();
-            log.debug("body:{}", responseBody.toString());
+            log.debug("body:{}", responseBody);
         }catch (IOException e){
             throw new RuntimeException(e);
         }
